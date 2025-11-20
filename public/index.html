@@ -1,0 +1,60 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Kyraxx Admin Panel</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; background:#0f1115; color:#e5e7eb; margin:0; }
+    header { padding:16px 20px; border-bottom:1px solid #1f2937; display:flex; align-items:center; justify-content:space-between; }
+    h1 { margin:0; font-size:18px; }
+    .container { padding:20px; }
+    .row { display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
+    button { background:#2563eb; color:white; border:none; border-radius:8px; padding:8px 12px; cursor:pointer; }
+    button.secondary { background:#374151; }
+    button.danger { background:#dc2626; }
+    table { width:100%; border-collapse:collapse; margin-top:12px; font-size:14px; }
+    th, td { padding:10px; border-bottom:1px solid #1f2937; }
+    th { text-align:left; color:#9ca3af; font-weight:600; }
+    .pill { padding:2px 8px; border-radius:9999px; font-size:12px; }
+    .green { background:#064e3b; color:#34d399; }
+    .red { background:#7f1d1d; color:#fca5a5; }
+    .yellow { background:#78350f; color:#fcd34d; }
+    .muted { color:#9ca3af; }
+    .grid { display:grid; grid-template-columns: 1fr; gap:16px; }
+    .card { background:#111827; border:1px solid #1f2937; border-radius:12px; padding:16px; }
+    code { background:#0b1220; padding:2px 6px; border-radius:6px; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Kyraxx Admin Panel</h1>
+    <div class="row">
+      <button class="secondary" id="refreshBtn">Refresh</button>
+      <button class="danger" id="killAllBtn">Kill All</button>
+      <button class="secondary" id="clearKillBtn">Clear Kill</button>
+    </div>
+  </header>
+  <div class="container grid">
+    <div class="card">
+      <div class="row" style="justify-content:space-between;">
+        <div>Server time: <span id="serverTime" class="muted">-</span></div>
+        <div>Kill directive: <code id="killDirective">{}</code></div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Client</th>
+            <th>Status</th>
+            <th>Last Seen</th>
+            <th>Active</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="clientsTbody"></tbody>
+      </table>
+    </div>
+  </div>
+  <script type="module" src="/main.js"></script>
+</body>
+</html>
