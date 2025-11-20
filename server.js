@@ -125,7 +125,33 @@ app.post('/api/kill/clear', auth, (_req, res) => {
   res.json({ ok: true, killDirective });
 });
 
-app.listen(PORT, () => {
-  console.log(`Admin panel running on http://localhost:${PORT}`);
+// 404 handler
+app.use((req, res) => {
+  res.status(404).json({ error: 'not_found' });
+});
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error('Server Error:', err);
+  res.status(500).json({ error: 'Internal Server Error' });
+});
+
+// Start the server
+const server = app.listen(PORT, '0.0.0.0', () => {
+  console.log(`✓ Server running on http://0.0.0.0:${PORT}`);
+  console.log('✓ Environment:', process.env.NODE_ENV || 'development');
+  console.log('✓ Admin user:', ADMIN_USER);
+}).on('error', (err) => {
+  console.error('Failed to start server:', err);
+  process.exit(1);
+});
+
+// Handle process termination
+process.on('SIGTERM', () => {
+  console.log('SIGTERM received. Shutting down gracefully');
+  server.close(() => {
+    console.log('Server closed');
+    process.exit(0);
+  });
 });
 
