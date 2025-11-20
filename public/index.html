@@ -54,6 +54,17 @@
         <tbody id="clientsTbody"></tbody>
       </table>
     </div>
+    <div class="card">
+      <div class="row" style="justify-content:space-between; align-items:center; margin-bottom:8px;">
+        <h2 style="margin:0; font-size:14px;">Offsets & Bones Config</h2>
+        <div class="row">
+          <button class="secondary" id="loadConfigBtn">Load</button>
+          <button id="saveConfigBtn">Save</button>
+        </div>
+      </div>
+      <textarea id="configEditor" style="width:100%; min-height:200px; background:#020617; color:#e5e7eb; border:1px solid #1f2937; border-radius:8px; padding:8px; font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-size:12px;"></textarea>
+      <p class="muted" style="margin-top:8px; font-size:12px;">Edit JSON for <code>offsets</code> and <code>bones</code>. Clients fetch <code>/api/config</code> on startup so they always use the latest values.</p>
+    </div>
   </div>
   <script type="module" src="/main.js"></script>
 </body>

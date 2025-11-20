@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import jwt from 'jsonwebtoken';
 import path from 'path';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -12,6 +13,99 @@ const PORT = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET || 'a358dd72dd34c42ca2f175595df70d099636c014';
 const ADMIN_USER = process.env.ADMIN_USERNAME || 'DR1P7@VS';
 const ADMIN_PASS = process.env.ADMIN_PASS || 'DR1P7@2008VS';
+
+// --- Remote offsets & bones config ---
+const defaultConfig = {
+  offsets: {
+    Il2Cpp: '0x0',
+    InitBase: '0x983FF10',
+    StaticClass: '0x5C',
+    CurrentMatch: '0x50',
+    MatchStatus: '0x3C',
+    LocalPlayer: '0x44',
+    DictionaryEntities: '0x68',
+    Player_IsDead: '0x4C',
+    Player_Name: '0x24C',
+    Player_Data: '0x44',
+    Player_ShadowBase: '0x149C',
+    XPose: '0x78',
+    AvatarManager: '0x420',
+    Avatar: '0x94',
+    Avatar_IsVisible: '0x7C',
+    Avatar_Data: '0x10',
+    Avatar_Data_IsTeam: '0x51',
+    AvatarPropManager: '0x3DC',
+    FollowCamera: '0x3B0',
+    Camera: '0x14',
+    AimRotation: '0x368',
+    MainCameraTransform: '0x1BC',
+    Weapon: '0x35C',
+    WeaponData: '0x54',
+    WeaponRecoil: '0xC',
+    ViewMatrix: '0xBC',
+    SilentAim: '0x4A0',
+    sAim1: '0x4A0',
+    sAim2: '0x874',
+    sAim3: '0x38',
+    sAim4: '0x2C'
+  },
+  bones: {
+    Head: '0x3B8',
+    Root: '0x3CC',
+    LeftWrist: '0x3B4',
+    Spine: '0x3C0',
+    Hip: '0x3C8',
+    RightCalf: '0x3D0',
+    LeftCalf: '0x3D4',
+    RightFoot: '0x3D8',
+    LeftFoot: '0x3DC',
+    RightWrist: '0x3E0',
+    LeftHand: '0x3E4',
+    LeftSholder: '0x3EC',
+    RightSholder: '0x3F0',
+    RightWristJoint: '0x3F4',
+    LeftWristJoint: '0x3F8',
+    LeftElbow: '0x3FC',
+    RightElbow: '0x400',
+    Pelvis: '0x3C',
+    LeftShoulder: '0x3EC',
+    RightShoulder: '0x3F0'
+  }
+};
+
+let configState = JSON.parse(JSON.stringify(defaultConfig));
+const CONFIG_PATH = path.join(__dirname, 'config.json');
+
+function mergeConfig(base, incoming) {
+  const result = { ...base };
+  if (!incoming || typeof incoming !== 'object') return result;
+
+  for (const sectionKey of ['offsets', 'bones']) {
+    const baseSection = base[sectionKey];
+    const incSection = incoming[sectionKey];
+    if (!baseSection || typeof baseSection !== 'object' || !incSection || typeof incSection !== 'object') continue;
+
+    const merged = { ...baseSection };
+    for (const [k, v] of Object.entries(incSection)) {
+      if (Object.prototype.hasOwnProperty.call(merged, k) && typeof v === 'string') {
+        merged[k] = v;
+      }
+    }
+    result[sectionKey] = merged;
+  }
+
+  return result;
+}
+
+try {
+  if (fs.existsSync(CONFIG_PATH)) {
+    const disk = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8'));
+    configState = mergeConfig(configState, disk);
+    console.log('Loaded config.json for offsets/bones');
+  }
+} catch (e) {
+  console.error('Failed to load config.json:', e);
+}
 
 // Middleware
 app.use(cors());
@@ -125,6 +219,33 @@ app.post('/api/kill/clear', auth, (_req, res) => {
   res.json({ ok: true, killDirective });
 });
 
+// --- Offsets/Bones config API ---
+app.get('/api/config', (req, res) => {
+  res.json(configState);
+});
+
+app.post('/api/config', auth, (req, res) => {
+  try {
+    const body = req.body || {};
+    if (!body.offsets && !body.bones) {
+      return res.status(400).json({ error: 'no_config' });
+    }
+
+    configState = mergeConfig(configState, body);
+
+    fs.writeFile(CONFIG_PATH, JSON.stringify(configState, null, 2), (err) => {
+      if (err) {
+        console.error('Failed to write config.json:', err);
+        return res.status(500).json({ error: 'save_failed' });
+      }
+      return res.json({ ok: true, config: configState });
+    });
+  } catch (e) {
+    console.error('Config update error:', e);
+    return res.status(500).json({ error: 'config_update_failed' });
+  }
+});
+
 // 404 handler
 app.use((req, res) => {
   res.status(404).json({ error: 'not_found' });
@@ -154,4 +275,3 @@ process.on('SIGTERM', () => {
     process.exit(0);
   });
 });
-

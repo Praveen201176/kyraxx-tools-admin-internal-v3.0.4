@@ -86,6 +86,30 @@ function startAutoRefresh() {
   }, 5000);
 }
 
+async function loadConfigEditor() {
+  const editor = $('#configEditor');
+  if (!editor) return;
+  try {
+    const data = await apiGet('/api/config');
+    editor.value = JSON.stringify(data, null, 2);
+  } catch (e) {
+    alert('Failed to load config. Make sure you are logged in.');
+  }
+}
+
+async function saveConfigEditor() {
+  const editor = $('#configEditor');
+  if (!editor) return;
+  if (!state.token) return showLogin();
+  try {
+    const parsed = JSON.parse(editor.value || '{}');
+    await apiPost('/api/config', parsed);
+    alert('Config saved. New clients will pick it up automatically.');
+  } catch (e) {
+    alert('Failed to save config. Check JSON is valid and you are logged in.');
+  }
+}
+
 function showLogin() {
   if ($('#loginOverlay')) return;
   const div = document.createElement('div');
@@ -146,8 +170,25 @@ function wireHeader() {
   });
 }
 
+function wireConfigEditor() {
+  const loadBtn = $('#loadConfigBtn');
+  const saveBtn = $('#saveConfigBtn');
+  if (loadBtn) {
+    loadBtn.addEventListener('click', async () => {
+      if (!state.token) return showLogin();
+      await loadConfigEditor();
+    });
+  }
+  if (saveBtn) {
+    saveBtn.addEventListener('click', async () => {
+      await saveConfigEditor();
+    });
+  }
+}
+
 (async function init() {
   wireHeader();
+  wireConfigEditor();
   await refreshKill();
   if (state.token) {
     try {
