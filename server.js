@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import express from 'express';
 import cors from 'cors';
 import jwt from 'jsonwebtoken';
@@ -11,12 +10,13 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 5173;
 const JWT_SECRET = process.env.JWT_SECRET || 'change-me';
-const ADMIN_USER = process.env.ADMIN_USER || 'admin';
+const ADMIN_USER = process.env.ADMIN_USERNAME || 'admin';
 const ADMIN_PASS = process.env.ADMIN_PASS || 'admin';
 
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
+
 
 // Serve index.html for root and any non-API routes
 app.get('/', (req, res) => {
